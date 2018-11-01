@@ -1,22 +1,13 @@
 FROM alpine:3.8
 
-ARG BUILD_DATE
-ARG VCS_REF
-ARG VERSION
-
-LABEL maintainer="CrazyMax" \
-  org.label-schema.build-date=$BUILD_DATE \
-  org.label-schema.name="fail2ban" \
-  org.label-schema.description="Fail2ban image based on Alpine Linux" \
-  org.label-schema.version=$VERSION \
-  org.label-schema.url="https://github.com/crazy-max/docker-fail2ban" \
-  org.label-schema.vcs-ref=$VCS_REF \
-  org.label-schema.vcs-url="https://github.com/crazy-max/docker-fail2ban" \
-  org.label-schema.vendor="CrazyMax" \
-  org.label-schema.schema-version="1.0"
+LABEL maintainer="CrazyMax"
 
 ARG FAIL2BAN_VERSION=0.10.4
 
+# Create necessary folders
+RUN mkdir -p /xlogs /fail2ban_db /data/action.d /data/filter.d /data/jail.d
+
+# Download and install fail2ban
 RUN apk --update --no-cache add \
     curl iptables python3 python3-dev py-setuptools ssmtp tzdata wget whois \
   && cd /tmp \
@@ -25,17 +16,21 @@ RUN apk --update --no-cache add \
   && cd fail2ban-${FAIL2BAN_VERSION} \
   && python setup.py install \
   && rm -rf /etc/fail2ban/jail.d \
-  && cp -f /etc/ssmtp/ssmtp.conf /etc/ssmtp/ssmtp.conf.or \
+  && rm -f /etc/ssmtp/ssmtp.conf \
   && rm -rf /var/cache/apk/* /tmp/*
 
+# Add entrypoint and make it executable
 ADD entrypoint.sh /entrypoint.sh
-
 RUN chmod a+x /entrypoint.sh
 
-VOLUME [ "/data" ]
+# Copy custom configurations
+COPY ./data /data
+
+# Make database regarding bans persistent 
+VOLUME [ "/fail2ban_db" ]
+
+# Add heartbeat command
+HEALTHCHECK --interval=10s --timeout=5s CMD fail2ban-client ping
 
 ENTRYPOINT [ "/entrypoint.sh" ]
 CMD [ "fail2ban-server", "-f", "-x", "-v", "start" ]
-
-HEALTHCHECK --interval=10s --timeout=5s \
-  CMD fail2ban-client ping

@@ -261,6 +261,13 @@ remember that these bans now apply to ALL forwarded traffic.
 
 # Changelog
 
+### 0.10.4.1-Beta2 (2018-11-02)
+
+* Remove wget
+* Update the documentation
+* This container is now available at Docker Hub under `jonasal/fail2ban`
+* Include Makefile
+
 ### 0.10.4.1-Beta1 (2018-11-02)
 
 * `@JonasAlfredsson` forks the repository.

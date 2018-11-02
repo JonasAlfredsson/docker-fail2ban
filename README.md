@@ -139,6 +139,16 @@ be overridden while printing out a warning about it.
 
 * `/fail2ban_db` : Contains fail2ban's persistent database
 
+### Notification Mails
+
+fail2ban can send mail through the `sendmail` program. By default it sends a 
+mail every time the server starts, a jail starts or a ban is issued. This gets
+a bit annoying so anything else than mails regarding bans issued is 
+[shut off][9] by having the two empty variables inside `sendmail-common.local`. 
+This can be reinstated by just removing this file. 
+
+If no external mail provider is specified (check out the `fail2ban.env` example)
+mail will be directed to `root@localhost:25`.
 
 # Extensive Details
 
@@ -177,10 +187,11 @@ As mentioned above, the `PREROUTING` chain is allowed to divide the incoming
 traffic into three different "sub-chains" depending on what classification it 
 sets on the data packet. In a similar manner you can actually split traffic 
 inside these "sub-chains" into further "sub-sub-chains" for even finer control 
-of what should happen to the packets. This is actually what the Docker service 
-does, by attaching a `DOCKER` chain onto the `FORWARD` chain. If you have the 
-Docker service running you should be able to see these chains if you run the 
-following command on your host.
+of what should happen to the packets. 
+This is actually [what the Docker service does][10], by attaching a `DOCKER` 
+chain onto the `FORWARD` chain. If you have the Docker service running you 
+should be able to see these chains if you run the following command on your 
+host.
 ```bash 
 sudo iptables -L
 ```
@@ -236,6 +247,13 @@ will affect both, but is more work required by the user. You may have a
 [look at it][8] if you want to, just change the chain name inside 
 `data/action.d/iptables-common.local` afterwards.
 
+## Older Docker Versions
+
+If you have an older version of Docker, and you desperately need this to work 
+without having to upgrade, you may just change the `DOCKER-USER` chain to 
+`FORWARD` to have all the fail2ban rules come before any Docker rules. The 
+effect should be the same, but remember that these bans now apply to ALL 
+forwarded traffic. 
 
 # Changelog
 
@@ -290,3 +308,5 @@ will affect both, but is more work required by the user. You may have a
 [6]: https://askubuntu.com/a/579242
 [7]: https://docs.docker.com/network/iptables/
 [8]: https://unrouted.io/2017/08/15/docker-firewall/
+[9]: https://serverfault.com/questions/257439/stop-fail2ban-stop-start-notifications
+[10]: http://blog.amigapallo.org/2016/04/14/configuring-fail2ban-and-iptables-to-get-along-with-docker/

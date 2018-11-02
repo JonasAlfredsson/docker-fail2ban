@@ -3,6 +3,7 @@ FROM alpine:3.8
 LABEL maintainer="Jonas Alfredsson <jonas.alfredsson@protonmail.com>"
 
 ARG FAIL2BAN_VERSION=0.10.4
+ARG PYINOTIFY_VERSION=0.9.6
 
 # Create necessary folders
 RUN mkdir -p /xlogs /fail2ban_db /data/action.d /data/filter.d /data/jail.d
@@ -18,6 +19,13 @@ RUN apk --update --no-cache add \
   && rm -rf /etc/fail2ban/jail.d \
   && rm -f /etc/ssmtp/ssmtp.conf \
   && rm -rf /var/cache/apk/* /tmp/*
+
+RUN cd /tmp \
+  && wget https://github.com/seb-m/pyinotify/archive/${PYINOTIFY_VERSION}.zip \
+  && unzip ${PYINOTIFY_VERSION}.zip \
+  && cd pyinotify-${PYINOTIFY_VERSION} \
+  && python setup.py install \
+  && rm -rf /tmp/*
 
 # Add entrypoint and make it executable
 ADD entrypoint.sh /entrypoint.sh

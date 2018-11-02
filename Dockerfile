@@ -9,9 +9,9 @@ RUN mkdir -p /xlogs /fail2ban_db /data/action.d /data/filter.d /data/jail.d
 
 # Download and install fail2ban
 RUN apk --update --no-cache add \
-    curl iptables python3 python3-dev py-setuptools ssmtp tzdata wget whois \
+    curl iptables python3 python3-dev py-setuptools ssmtp tzdata whois \
   && cd /tmp \
-  && wget https://github.com/fail2ban/fail2ban/archive/${FAIL2BAN_VERSION}.zip \
+  && curl -OL https://github.com/fail2ban/fail2ban/archive/${FAIL2BAN_VERSION}.zip \
   && unzip ${FAIL2BAN_VERSION}.zip \
   && cd fail2ban-${FAIL2BAN_VERSION} \
   && python setup.py install \

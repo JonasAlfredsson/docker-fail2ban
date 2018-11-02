@@ -239,34 +239,44 @@ will affect both, but is more work required by the user. You may have a
 
 # Changelog
 
-### 0.10.4-RC3 (2018/10/06)
+### 0.10.4.1-Beta1 (2018-11-02)
+
+* `@JonasAlfredsson` forks the repository.
+* Make fail2ban attach to the `DOCKER-USER` chain in the iptables.
+* Make the mailing functionality send to the right location.
+* Refactor the entrypoint script.
+* Refactor the Dockerfile.
+* Remove unused files and refactor folder structure.
+* Much more documentation. 
+
+### 0.10.4-RC3 (2018-10-06)
 
 * Add whois (Issue #6)
 
-### 0.10.4-RC2 (2018/10/05)
+### 0.10.4-RC2 (2018-10-05)
 
 * Allow to add custom actions and filters through `/data/action.d` and `/data/filter.d` folders (Issue #4)
 * Relocate database to `/data/db` and jails to `/data/jail.d` (breaking change, see README.md)
 
-### 0.10.4-RC1 (2018/10/04)
+### 0.10.4-RC1 (2018-10-04)
 
 * Upgrade to Fail2ban 0.10.4
 
-### 0.10.3.1-RC4 (2018/08/19)
+### 0.10.3.1-RC4 (2018-08-19)
 
 * Add curl (Issue #1)
 
-### 0.10.3.1-RC3 (2018/07/28)
+### 0.10.3.1-RC3 (2018-07-28)
 
 * Upgrade based image to Alpine Linux 3.8
 * Unset sensitive vars
 
-### 0.10.3.1-RC2 (2018/05/07)
+### 0.10.3.1-RC2 (2018-05-07)
 
 * Add mail alerts configurations with SSMTP
 * Add healthcheck
 
-### 0.10.3.1-RC1 (2018/04/25)
+### 0.10.3.1-RC1 (2018-04-25)
 
 * Initial version based on Fail2ban 0.10.3.1
 

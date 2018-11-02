@@ -7,7 +7,7 @@ host's network with privileges to edit the [iptables][4]. Create custom
 other containers. 
 
 > :warning: This container require a docker version greater than 17.06 to 
-  function without some slight modifications!
+  function without some [slight modifications][11]!
 
 # Acknowledgments and Thanks
 
@@ -33,7 +33,7 @@ docker run -d --network host --cap-add NET_ADMIN --cap-add NET_RAW \
 
 Docker-compose is the recommended way to run this image. See the example of a 
 compose file inside the `examples` folder, and you may use the `.env` file to 
-not have all the variables in a separate location. Then it can all be launched 
+define all the variables in a separate location. Then it can all be launched 
 via the following commands:
 ```bash
 docker-compose build --pull
@@ -44,10 +44,11 @@ docker-compose up
 
 As previously stated, this container is designed to live in a docker-compose 
 environment where many containers are running a single service each. This 
-container is the "primary" caretaker of the `log_collector` named volume, which 
-should be mounted to any other container you want to obtain logs from. 
+container is the "primary" caretaker of the named volume called 
+"`log_collector`", which should be mounted to any other container you want to 
+obtain logs from. 
 
-#### Here I create a basic example with Nextcloud as the service to protect
+#### Here I create a basic example with [Nextcloud][12] as the service to protect.
 
 Create a new "jail" file called `nextcloud.conf` in `data/jail.d/`:
 ```
@@ -67,9 +68,9 @@ failregex=^.*Login failed: '.*' \(Remote IP: '<HOST>'\).*$
 Inside the container running Nextcloud you need to mount the named volume 
 `log_collector`, or whatever name you give it, and make sure the Nextcloud 
 service place its logs inside this. This volume is then mounted at `/xlogs` in
-the fail2ban container, which is where we direct it by defining 
-`logpath = /xlogs/nextcloud.log` inside the jail file. This way multiple 
-services' logs can be observed from a single fail2ban container. 
+the fail2ban container, which is where it expects to find the log file as 
+we have defined `logpath = /xlogs/nextcloud.log` inside the jail file. This way 
+multiple services' logs can be observed from a single fail2ban container. 
 
 A `docker-compose` file for this may look something like this.  
 ```yaml
@@ -145,10 +146,12 @@ fail2ban can send mail through the `sendmail` program. By default it sends a
 mail every time the server starts, a jail starts or a ban is issued. This gets
 a bit annoying so anything else than mails regarding bans issued is 
 [shut off][9] by having the two empty variables inside `sendmail-common.local`. 
-This can be reinstated by just removing this file. 
+The default behaviour can be reinstated by just removing this file. 
 
-If no external mail provider is specified (check out the `fail2ban.env` example)
-mail will be directed to `root@localhost:25`.
+If no external mail provider is specified (check out the `fail2ban.env` 
+example), all mail will be directed to `root@localhost:25`. This way you should
+be able to read any mails by simply typing `mail` in you host machine's 
+terminal. 
 
 # Extensive Details
 
@@ -188,7 +191,7 @@ traffic into three different "sub-chains" depending on what classification it
 sets on the data packet. In a similar manner you can actually split traffic 
 inside these "sub-chains" into further "sub-sub-chains" for even finer control 
 of what should happen to the packets. 
-This is actually [what the Docker service does][10], by attaching a `DOCKER` 
+This is actually what the Docker service does, by attaching a `DOCKER` 
 chain onto the `FORWARD` chain. If you have the Docker service running you 
 should be able to see these chains if you run the following command on your 
 host.
@@ -250,10 +253,11 @@ will affect both, but is more work required by the user. You may have a
 ## Older Docker Versions
 
 If you have an older version of Docker, and you desperately need this to work 
-without having to upgrade, you may just change the `DOCKER-USER` chain to 
-`FORWARD` to have all the fail2ban rules come before any Docker rules. The 
-effect should be the same, but remember that these bans now apply to ALL 
-forwarded traffic. 
+without upgrading, you may just change the line reading `DOCKER-USER` to 
+`FORWARD` inside the `data/action.d/iptables-common.local` file. This should 
+make all the fail2ban rules come before any Docker rules and the effect 
+[should be the same][10]  as having them in the `DOCKER-USER` chain. However, 
+remember that these bans now apply to ALL forwarded traffic. 
 
 # Changelog
 
@@ -310,3 +314,5 @@ forwarded traffic.
 [8]: https://unrouted.io/2017/08/15/docker-firewall/
 [9]: https://serverfault.com/questions/257439/stop-fail2ban-stop-start-notifications
 [10]: http://blog.amigapallo.org/2016/04/14/configuring-fail2ban-and-iptables-to-get-along-with-docker/
+[11]: https://github.com/JonasAlfredsson/docker-fail2ban#older-docker-versions
+[12]: https://nextcloud.com/

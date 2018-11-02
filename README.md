@@ -22,11 +22,11 @@ images.
 This container thrives the best while in a docker-compose setup, but can also 
 launched stand-alone by running the two following commands:
 ```bash
-docker build --tag crazymax/fail2ban:latest .
+docker build --tag jonasal/fail2ban:latest .
 docker run -d --network host --cap-add NET_ADMIN --cap-add NET_RAW \
   --name fail2ban \
   -v log_collector:/xlogs \
-  crazymax/fail2ban:latest
+  jonasal/fail2ban:latest
 ```
 
 ## Run with `docker-compose`
@@ -60,7 +60,7 @@ docker run -it --network host --cap-add NET_ADMIN --cap-add NET_RAW \
   --name fail2ban \
   -v log_collector:/xlogs \
   -e F2B_LOG_LEVEL=DEBUG \
-  crazymax/fail2ban:latest
+  jonasal/fail2ban:latest
 ```
 
 ### Use fail2ban-client

@@ -1,6 +1,6 @@
 FROM alpine:3.8
 
-LABEL maintainer="CrazyMax"
+LABEL maintainer="Jonas Alfredsson <jonas.alfredsson@protonmail.com>"
 
 ARG FAIL2BAN_VERSION=0.10.4
 

@@ -2,15 +2,17 @@ version: "3.2"
 
 services:
   fail2ban:
-    image: crazymax/fail2ban:latest
+    build: ./fail2ban
     container_name: fail2ban
     network_mode: "host"
     cap_add:
       - NET_ADMIN
       - NET_RAW
     volumes:
-      - "./data:/data"
-      - "/var/log:/var/log:ro"
+      - log_collector:/xlogs
     env_file:
       - "./fail2ban.env"
-    restart: always
+    restart: unless-stopped
+
+volumes:
+  log_collector:

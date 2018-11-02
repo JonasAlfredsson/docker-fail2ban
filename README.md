@@ -40,30 +40,71 @@ docker-compose build --pull
 docker-compose up
 ```
 
-## Notes
+## Locating The Logs
 
-### Example with sshd jail
+As previously stated, this container is designed to live in a docker-compose 
+environment where many containers are running a single service each. This 
+container is the "primary" caretaker of the `log_collector` named volume, which 
+should be mounted to any other container you want to obtain logs from. 
 
-Create a new "jail" file called `sshd.conf` in `$(pwd)/jail.d`:
+#### Here I create a basic example with Nextcloud as the service to protect
+
+Create a new "jail" file called `nextcloud.conf` in `data/jail.d/`:
 ```
-[sshd]
-enabled     = true
-port        = ssh
-filter      = sshd[mode=aggressive]
-logpath     = /xlogs/auth.log
-maxretry    = 5
+[nextcloud]
+backend = auto
+enabled = true
+filter = ncFilter
+logpath = /xlogs/nextcloud.log
+```
+Here we have also stated a custom filter, called "ncFilter", which 
+fail2ban expects to find inside `data/filter.d/`. So the file `ncFilter.conf`
+needs to be created and may look like this.
+```
+[Definition]
+failregex=^.*Login failed: '.*' \(Remote IP: '<HOST>'\).*$
+```
+Inside the container running Nextcloud you need to mount the named volume 
+`log_collector`, or whatever name you give it, and make sure the Nextcloud 
+service place its logs inside this. This volume is then mounted at `/xlogs` in
+the fail2ban container, which is where we direct it by defining 
+`logpath = /xlogs/nextcloud.log` inside the jail file. This way multiple 
+services' logs can be observed from a single fail2ban container. 
+
+A `docker-compose` file for this may look something like this.  
+```yaml
+.
+.
+.
+  nextcloud:
+    build: ./nextcloud
+    restart: unless-stopped
+    volumes:
+      - nextcloud_www:/var/www/html
+      - nextcloud_data:/var/nc_data
+      - log_collector:/log/path
+    depends_on:
+      - fail2ban
+
+  fail2ban:
+    build: ./fail2ban
+    restart: unless-stopped
+    network_mode: "host"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - log_collector:/xlogs
+
+volumes:
+  nextcloud_data:
+  nextcloud_www:
+  log_collector:
 ```
 
-And start the container with more verbose output.
-```bash
-docker run -it --network host --cap-add NET_ADMIN --cap-add NET_RAW \
-  --name fail2ban \
-  -v log_collector:/xlogs \
-  -e F2B_LOG_LEVEL=DEBUG \
-  jonasal/fail2ban:latest
-```
+## Good to Know
 
-### Use fail2ban-client
+### Use the fail2ban-client
 
 [Fail2ban commands][3] can be used through the container. Here is an example if 
 you want to ban an IP manually:
@@ -77,9 +118,6 @@ docker exec -it <CONTAINER> fail2ban-client set <JAIL> banip <IP>
 Custom actions and filters can be added in `/data/action.d` and 
 `/data/filter.d`. If you add an action or filter that already exists, it will 
 be overridden while printing out a warning about it. 
-
-> :warning: Container has to be restarted to propagate changes
-
 
 ### Available Environment variables
 

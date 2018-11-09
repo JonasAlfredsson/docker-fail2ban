@@ -19,9 +19,9 @@ RUN apk --update --no-cache add \
   && rm -f /etc/ssmtp/ssmtp.conf \
   && rm -rf /var/cache/apk/* /tmp/*
 
-# Add entrypoint and make it executable
-ADD entrypoint.sh /entrypoint.sh
-RUN chmod a+x /entrypoint.sh
+# Add custom scritps and make them executable
+ADD *.sh /
+RUN chmod a+x /*.sh
 
 # Copy custom configurations
 COPY ./data /data

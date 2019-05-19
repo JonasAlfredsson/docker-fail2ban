@@ -208,16 +208,33 @@ be overridden while printing out a warning about it.
 
 ## Log File Layout
 
-The log files that are parsed needs to have a timestamp in the beginning of the
-line. This is a [built in functionality][14] of `fail2ban`, and can not be 
-changed. If a regex is created with a `^`, i.e. "at the beginning of the line",
-then the anchor refers to the start of the remainder of the line, _after_ the 
-preceding timestamp and intervening whitespace.
+The [documentation][14] states that the log files that are parsed needs to have 
+a timestamp in the beginning of the line. This is a built in functionality of 
+`fail2ban`, and can not be changed. If a regex is created with a `^`, i.e. "at 
+the beginning of the line", then the anchor refers to the start of the remainder
+of the line, _after_ the preceding timestamp and intervening whitespace.
 
 If `fail2ban` is unable to interpret the timestamp in the beginning it will tell
 you so in its output, and then you have two options: 
 - Reconfigure your daemon to log with a timestamp in a more common format.
 - File a bug report to `fail2ban` asking to have your timestamp format included.
+
+However, since this functionality is still undocumented for the users, trial and
+error has shown it is [not always necessary][15] for the timestamp to be at the 
+beginning of the line, if you allow for some wildcard expansion in the regex. 
+For nginx log format it will be able to find the timestamp if it looks like 
+this:
+
+```
+1.2.3.4 - - [19/May/2019:08:52:51 +0000] "GET / HTTP/1.1" 200 1100 ....
+```
+
+With the following filter: 
+
+
+```
+failregex = ^<HOST> -.*
+```
 
 ## Missing Log Files
 
@@ -429,4 +446,5 @@ remember that these bans now apply to ALL forwarded traffic.
 [12]: https://nextcloud.com/
 [13]: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 [14]: https://www.fail2ban.org/wiki/index.php/MANUAL_0_8
+[15]: https://unix.stackexchange.com/questions/179477/how-does-fail2ban-detect-the-time-of-an-intrusion-attempt-if-the-log-files-dont
 

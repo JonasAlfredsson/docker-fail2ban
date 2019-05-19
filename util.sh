@@ -2,10 +2,10 @@
 
 # Helper function to output error messages to STDERR, with red text
 error() {
-    (set +x; tput -Tscreen bold
-    tput -Tscreen setaf 1
-    echo $*
-    tput -Tscreen sgr0) >&2
+  (set +x; tput -Tscreen bold
+  tput -Tscreen setaf 1
+  echo $*
+  tput -Tscreen sgr0) >&2
 }
 
 
@@ -54,6 +54,8 @@ set_config() {
   sed -i "s/dbpurgeage =.*/dbpurgeage = $F2B_DB_PURGE_AGE/g" /etc/fail2ban/fail2ban.conf
   cat > /etc/fail2ban/jail.local <<EOL
 [DEFAULT]
+bantime = ${F2B_BAN_TIME}
+findtime = ${F2B_FIND_TIME}
 maxretry = ${F2B_MAX_RETRY}
 destemail = ${F2B_DEST_EMAIL}
 sender = ${F2B_SENDER}
@@ -69,22 +71,22 @@ copy_custom_jails() {
 }
 
 
-# Check if there are any custom actions and copy them to correct location
+# Check if there are any custom actions and symlink them to correct location
 copy_custom_actions() {
   echo "Checking for custom actions in /data/action.d..."
   actions=$(ls -l /data/action.d | egrep '^-' | awk '{print $9}')
   for action in ${actions}; do
     if [ -f "/etc/fail2ban/action.d/${action}" ]; then
-      echo "  WARNING: '${action}'' already exists and will be overridden"
+      echo "  WARNING: '${action}' already exists and will be overridden"
       rm -f "/etc/fail2ban/action.d/${action}"
     fi
-    echo "  Add custom action '${action}''"
+    echo "  Add custom action '${action}'"
     ln -sf "/data/action.d/${action}" "/etc/fail2ban/action.d/"
   done
 }
 
 
-# Check if there are any custom filters and copy them to correct location
+# Check if there are any custom filters and symlink them to correct location
 copy_custom_filters() {
   echo "Checking for custom filters in /data/filter.d..."
   filters=$(ls -l /data/filter.d | egrep '^-' | awk '{print $9}')
@@ -99,38 +101,40 @@ copy_custom_filters() {
 }
 
 
-# Return the specified path of the log file
+# Return the path of the log file specified in a jail config file
 parse_logfile() {
-    grep "logpath" "$1" | cut -d '=' -f 2 
+  grep "logpath" "$1" | cut -d '=' -f 2 
 }
 
 
 # Given a config file path, return 0 if the referenced log file exist (or there 
 # are no file needed to be found). Return 1 otherwise.
 logfile_exist() {
-    logfile=$(parse_logfile $1)
-    if [ ! -f $logfile ]; then
-        #error "Could not find $logfile for $1"
-        return 1
-    fi
-    return 0
+  logfile=$(parse_logfile $1)
+  if [ ! -f $logfile ]; then
+      #error "Could not find $logfile for $1"
+      return 1
+  fi
+  return 0
 }
 
 
-# To hinder that many processes spam the client with restart requests at the 
-# same we make a simple locking mechanism to create some order in this world.
+# To hinder that many processes spam the client with restart requests, at the 
+# same time, we make a simple locking mechanism to create some order in this 
+# world. `mkdir` should be an atomic operation.
 reload_fail2ban() {
-    while :; do
-        if mkdir /tmp/restart.lock; then
-            # We have lock, restart the fail2ban server
-            fail2ban-client restart
-            rmdir /tmp/restart.lock
-            break
-        else
-            # Some other process has the restart lock, wait a second
-            sleep 1
-        fi
-    done
+  while :; do
+    if mkdir /tmp/restart.lock; then
+      # We have lock, restart the fail2ban server
+      fail2ban-client reload
+      sleep 2
+      rmdir /tmp/restart.lock
+      break
+    else
+      # Some other process has the restart lock, wait a second
+      sleep 1
+    fi
+  done
 }
 
 
@@ -139,41 +143,42 @@ reload_fail2ban() {
 # started yet. This will will monitor for changes every 30 seconds and then 
 # re-enable them if the missing log file shows up.
 config_watcher() {
-    conf_file=$1
-    while :; do
-        if logfile_exist $conf_file; then
-            if [ ${conf_file##*.} = nolog ]; then
-                echo "Found the log file for $conf_file, enabling..."
-                mv $conf_file ${conf_file%.*}
-            fi
-            echo "Reloading fail2ban"
-            reload_fail2ban
-            break
-        fi
-        error "Waiting for the log file referenced in $conf_file to come online"
-        sleep 30
-    done
+  conf_file=$1
+  while :; do
+    if logfile_exist $conf_file; then
+      if [ ${conf_file##*.} = nolog ]; then
+        echo "Found the log file for $conf_file, enabling..."
+        mv $conf_file ${conf_file%.*}
+      fi
+      echo "Reloading fail2ban"
+      reload_fail2ban
+      break
+    fi
+    error "Waiting for the log file referenced in $conf_file to come online"
+    sleep 30
+  done
 }
 
 
 # A function that sifts through /data/jail.d/, looking for jail configuration 
 # files and starts a "config_watcher" on each one of them.
 auto_enable_jails() {
-    for conf_file in /data/jail.d/*.conf*; do
-        if logfile_exist $conf_file; then
-            if [ ${conf_file##*.} = nolog ]; then
-                echo "Found the log file for $conf_file, enabling..."
-                mv $conf_file ${conf_file%.*}
-            fi
-        else
-            if [ ${conf_file##*.} = conf ]; then
-                error "The log file for $conf_file is missing, disabling..."
-                mv $conf_file $conf_file.nolog
-                conf_file="$conf_file.nolog"
-            fi
+  for conf_file in /data/jail.d/*.conf*; do
+    if logfile_exist $conf_file; then
+      if [ ${conf_file##*.} = nolog ]; then
+        echo "Found the log file for $conf_file, enabling..."
+        mv $conf_file ${conf_file%.*}
+      fi
+    else
+      if [ ${conf_file##*.} = conf ]; then
+        error "The log file for $conf_file is missing, disabling..."
+        mv $conf_file $conf_file.nolog
+        conf_file="$conf_file.nolog"
+      fi
 
-            echo "Attaching a watcher to $conf_file"
-            config_watcher $conf_file &
-        fi
-    done
+      echo "Attaching a watcher to $conf_file"
+      config_watcher $conf_file &
+    fi
+  done
 }
+

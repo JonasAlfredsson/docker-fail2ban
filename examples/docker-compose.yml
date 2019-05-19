@@ -9,10 +9,12 @@ services:
       - NET_ADMIN
       - NET_RAW
     volumes:
+      - fail2ban_db:/fail2ban_db
       - log_collector:/xlogs
     env_file:
       - "./fail2ban.env"
     restart: unless-stopped
 
 volumes:
+  fail2ban_db:
   log_collector:

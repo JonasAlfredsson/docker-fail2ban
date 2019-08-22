@@ -13,6 +13,10 @@ See full explanation under [Extensive Details](#extensive-details).
 > :warning: This container require a docker version greater than 17.06 to 
   function without some [slight modifications][11]!
 
+> :warning: There is currently some compatibility issues with the new 
+  `nftables` and this container. Check out how to revert back to the old
+  `iptables` [here](#nftables).
+
 # Acknowledgements and Thanks
 
 This repository was forked from `@crazymax` to be able to modify it so that it
@@ -372,6 +376,30 @@ make all the fail2ban rules come before any Docker rules and the effect
 [should be the same][10]  as having them in the `DOCKER-USER` chain. However, 
 remember that these bans now apply to ALL forwarded traffic. 
 
+## nftables
+
+I have not yet had time to go into detail on how to use the new `nftables`
+with fail2ban inside Docker, so for now I have just reverted to use the old
+legacy `iptables`. I used this guide for [Debian Buster][16], where you have
+to run the following commands as root:
+
+```
+update-alternatives --set iptables /usr/sbin/iptables-legacy
+update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+update-alternatives --set arptables /usr/sbin/arptables-legacy
+update-alternatives --set ebtables /usr/sbin/ebtables-legacy
+```
+
+After this it is necessary to reboot so that all services start using the
+legacy settings again. This solved the problem where fail2ban would output 
+the following error messages:
+
+```
+stderr: 'iptables: No chain/target/match by that name.'
+returned 1
+```
+
+
 # Changelog
 
 ### 0.10.4.2-Beta1 (2019-05-19)
@@ -447,4 +475,5 @@ remember that these bans now apply to ALL forwarded traffic.
 [13]: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 [14]: https://www.fail2ban.org/wiki/index.php/MANUAL_0_8
 [15]: https://unix.stackexchange.com/questions/179477/how-does-fail2ban-detect-the-time-of-an-intrusion-attempt-if-the-log-files-dont
+[16]: https://wiki.debian.org/nftables
 

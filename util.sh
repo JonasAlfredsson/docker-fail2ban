@@ -132,18 +132,18 @@ reload_fail2ban() {
 # here we will monitor for changes of these missing log files every 30 seconds
 # and then re-enable the config files if they show up.
 config_watcher() {
-  conf_file=$1
+  local conf_file=$1
   while :; do
-    if logfile_exist $conf_file; then
+    if logfile_exist ${conf_file}; then
       if [ ${conf_file##*.} = nolog ]; then
-        echo "Found the log file for $conf_file, enabling..."
-        mv $conf_file ${conf_file%.*}
+        echo "Found the log file for ${conf_file}, enabling..."
+        mv ${conf_file} ${conf_file%.*}
       fi
       echo "Reloading fail2ban"
       reload_fail2ban
       break
     fi
-    error "Waiting for the log file referenced in $conf_file to come online"
+    error "Waiting for the log file referenced in ${conf_file%.*} to come online"
     sleep 30
   done
 }
@@ -155,18 +155,18 @@ config_watcher() {
 # able to re-enable them when their log files shows up.
 auto_enable_jails() {
   echo "Auto enabling all jails..."
-  conf_files=$(ls -l /etc/fail2ban/jail.d/ | egrep '^(-|l).*\.conf.*' | awk '{print $9}')
-  for conf_file in "/etc/fail2ban/jail.d/${conf_files}"; do
+  conf_files=$(ls -l /etc/fail2ban/jail.d/ | egrep '^(-|l).*\.conf.*' | awk '{print "/etc/fail2ban/jail.d/"$9}')
+  for conf_file in ${conf_files}; do
     if logfile_exist $conf_file; then
       if [ ${conf_file##*.} = nolog ]; then
         echo "Found the log file for ${conf_file}, enabling..."
-        mv $conf_file ${conf_file%.*}
+        mv ${conf_file} ${conf_file%.*}
       fi
     else
       if [ ${conf_file##*.} = conf ]; then
         error "The log file for ${conf_file} is missing, disabling..."
-        mv $conf_file $conf_file.nolog
-        conf_file="$conf_file.nolog"
+        mv ${conf_file} ${conf_file}.nolog
+        conf_file="${conf_file}.nolog"
       fi
 
       echo "Attaching a watcher to $conf_file"

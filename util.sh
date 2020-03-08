@@ -80,7 +80,9 @@ symlink_files_to_folder() {
 
   for file in ${files}; do
     if [ -f "/etc/fail2ban/${type}.d/${file}" ]; then
-      echo "  WARNING: '${file}' already exists and will be overridden"
+      if [ ! -h "/etc/fail2ban/${type}.d/${file}" ]; then
+        echo "  WARNING: '${file}' already exists and will be overwritten"
+      fi
       rm -f "/etc/fail2ban/${type}.d/${file}"
     fi
     echo "  Adding ${type} '${file}'"

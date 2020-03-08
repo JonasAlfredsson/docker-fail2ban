@@ -21,7 +21,7 @@ set_timezone() {
 set_mail() {
   echo "Setting SSMTP configuration"
   if [ -z "$SSMTP_HOST" ] ; then
-    echo "WARNING: SSMTP_HOST must be defined if you want fail2ban to send emails"
+    echo "  SSMTP_HOST unset, defaulting to sending mails to localhost"
     cat > /etc/ssmtp/ssmtp.conf <<EOL
 root=postmaster
 mailhub=localhost:25

@@ -166,15 +166,17 @@ config_watcher() {
 # "config_watcher" on each one of these configs, which were not ready, to be
 # able to re-enable them when their log files shows up.
 auto_enable_jails() {
-  for conf_file in /data/jail.d/*.conf*; do
+  echo "Auto enabling all jails..."
+  conf_files=$(ls -l /etc/fail2ban/jail.d/ | egrep '^-.*\.conf.*' | awk '{print $9}')
+  for conf_file in "/etc/fail2ban/jail.d/${conf_files}"; do
     if logfile_exist $conf_file; then
       if [ ${conf_file##*.} = nolog ]; then
-        echo "Found the log file for $conf_file, enabling..."
+        echo "Found the log file for ${conf_file}, enabling..."
         mv $conf_file ${conf_file%.*}
       fi
     else
       if [ ${conf_file##*.} = conf ]; then
-        error "The log file for $conf_file is missing, disabling..."
+        error "The log file for ${conf_file} is missing, disabling..."
         mv $conf_file $conf_file.nolog
         conf_file="$conf_file.nolog"
       fi

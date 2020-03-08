@@ -4,18 +4,18 @@ LABEL maintainer="Jonas Alfredsson <jonas.alfredsson@protonmail.com>"
 
 ARG FAIL2BAN_VERSION=0.10.4
 
+# Do a single run command to make the intermediary containers smaller.
+RUN \
 # Create necessary folders.
-RUN mkdir -p \
+    mkdir -p \
     /xlogs \
     /fail2ban_db \
     /data/action.d \
     /data/filter.d \
     /data/jail.d \
     && \
-    chmod 777 /xlogs
-
-# Do a single run command to make the intermediary containers smaller.
-RUN \
+    chmod 777 /xlogs \
+    && \
 # Install all necessary packages.
     apk --update --no-cache add \
         curl \
@@ -33,12 +33,11 @@ RUN \
     && unzip ${FAIL2BAN_VERSION}.zip \
     && cd fail2ban-${FAIL2BAN_VERSION} \
     && python setup.py install \
-# Clean up after us.
-    && rm -rf /etc/fail2ban/jail.d \
+# Clean up temporary and unused files.
     && rm -f /etc/ssmtp/ssmtp.conf \
     && rm -rf /var/cache/apk/* /tmp/*
 
-# Add our custom scritps and make them executable.
+# Add our custom scripts and make them executable.
 ADD *.sh /
 RUN chmod a+x /*.sh
 

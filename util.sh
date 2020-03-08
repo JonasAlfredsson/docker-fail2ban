@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Helper function to output error messages to STDERR, with red text
+# Helper function to output error messages to STDERR, with red text.
 error() {
   (set +x; tput -Tscreen bold
   tput -Tscreen setaf 1
@@ -9,7 +9,7 @@ error() {
 }
 
 
-# Set timezone inside container
+# Set timezone inside container.
 set_timezone() {
   echo "Setting timezone to ${TZ}"
   ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime
@@ -17,7 +17,7 @@ set_timezone() {
 }
 
 
-# Configure mail settings
+# Configure mail settings.
 set_mail() {
   echo "Setting SSMTP configuration"
   if [ -z "$SSMTP_HOST" ] ; then
@@ -45,7 +45,7 @@ EOL
 }
 
 
-# Modify the fail2ban config file
+# Modify the fail2ban config file and the default jail settings.
 set_config() {
   echo "Setting Fail2ban configuration"
   sed -i "s/logtarget =.*/logtarget = STDOUT/g" /etc/fail2ban/fail2ban.conf
@@ -64,14 +64,14 @@ EOL
 }
 
 
-# Link entire custom jail folder to correct location
+# Link the entire custom jail folder to the correct location.
 copy_custom_jails() {
   echo "Copying custom jails"
   ln -sf /data/jail.d /etc/fail2ban/
 }
 
 
-# Check if there are any custom actions and symlink them to correct location
+# Check if there are any custom actions and symlink them to correct location.
 copy_custom_actions() {
   echo "Checking for custom actions in /data/action.d..."
   actions=$(ls -l /data/action.d | egrep '^-' | awk '{print $9}')
@@ -86,7 +86,7 @@ copy_custom_actions() {
 }
 
 
-# Check if there are any custom filters and symlink them to correct location
+# Check if there are any custom filters and symlink them to correct location.
 copy_custom_filters() {
   echo "Checking for custom filters in /data/filter.d..."
   filters=$(ls -l /data/filter.d | egrep '^-' | awk '{print $9}')
@@ -101,14 +101,14 @@ copy_custom_filters() {
 }
 
 
-# Return the path of the log file specified in a jail config file
+# Return the path of the log file specified in a jail config file.
 parse_logfile() {
-  grep "logpath" "$1" | cut -d '=' -f 2 
+  grep "logpath" "$1" | cut -d '=' -f 2
 }
 
 
-# Given a config file path, return 0 if the referenced log file exist (or there 
-# are no file needed to be found). Return 1 otherwise.
+# Given a config file path, return 0 if the referenced log file exist (or there
+# are no file needed to be found). Return 1 otherwise (i.e. error exit code).
 logfile_exist() {
   logfile=$(parse_logfile $1)
   if [ ! -f $logfile ]; then
@@ -119,29 +119,30 @@ logfile_exist() {
 }
 
 
-# To hinder that many processes spam the client with restart requests, at the 
-# same time, we make a simple locking mechanism to create some order in this 
+# To hinder that many processes spam fail2ban with restart requests, at the
+# same time, we make a simple locking mechanism to create some order in this
 # world. `mkdir` should be an atomic operation.
 reload_fail2ban() {
   while :; do
     if mkdir /tmp/restart.lock; then
-      # We have lock, restart the fail2ban server
+      # We have lock, restart the fail2ban server.
       fail2ban-client reload
       sleep 2
       rmdir /tmp/restart.lock
       break
     else
-      # Some other process has the restart lock, wait a second
+      # Some other process has the restart lock, wait a second.
       sleep 1
     fi
   done
 }
 
 
-# A function that will disable every config file that has a misspelled log file
-# path, or the service who will produce this log file might just not have 
-# started yet. This will will monitor for changes every 30 seconds and then 
-# re-enable them if the missing log file shows up.
+# This is a function which can be "attached" to jail config files that are
+# disabled because they reference a log file which does not (yet) exist. The
+# service who will produce this log file might just not have started yet, so
+# here we will monitor for changes of these missing log files every 30 seconds
+# and then re-enable the config files if they show up.
 config_watcher() {
   conf_file=$1
   while :; do
@@ -160,8 +161,10 @@ config_watcher() {
 }
 
 
-# A function that sifts through /data/jail.d/, looking for jail configuration 
-# files and starts a "config_watcher" on each one of them.
+# A function that sifts through /data/jail.d/ and disables every jail config
+# file which references a log file that does not (yet) exist. It then starts a
+# "config_watcher" on each one of these configs, which were not ready, to be
+# able to re-enable them when their log files shows up.
 auto_enable_jails() {
   for conf_file in /data/jail.d/*.conf*; do
     if logfile_exist $conf_file; then
@@ -181,4 +184,3 @@ auto_enable_jails() {
     fi
   done
 }
-

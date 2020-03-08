@@ -24,12 +24,12 @@ echo "Initializing fail2ban container"
 set_timezone
 set_mail
 set_config
-copy_custom_jails
-copy_custom_actions
-copy_custom_filters
+symlink_files_to_folder "jail"
+symlink_files_to_folder "action"
+symlink_files_to_folder "filter"
 auto_enable_jails
 
 # Launch fail2ban
 echo "Launching fail2ban"
-exec "$@" 
+exec "$@"
 

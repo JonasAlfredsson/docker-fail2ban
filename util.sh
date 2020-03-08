@@ -64,39 +64,27 @@ EOL
 }
 
 
-# Link the entire custom jail folder to the correct location.
-copy_custom_jails() {
-  echo "Copying custom jails"
-  ln -sf /data/jail.d /etc/fail2ban/
-}
+# A function which creates symlinks inside the default fail2ban folders, under
+# /etc/fail2ban/, to all files found in the user defined folders under /data/.
+# This will allow us to manipulate the created symlinks, without destroying
+# anything for the user.
+symlink_files_to_folder() {
+  type=$1
+  echo "Checking for ${type}s in /data/${type}.d..."
+  files=$(ls -l /data/${type}.d/ | egrep '^-' | awk '{print $9}')
 
+  if [ "${files}x" == "x" ]; then
+    echo "  No ${type} files found"
+    return
+  fi
 
-# Check if there are any custom actions and symlink them to correct location.
-copy_custom_actions() {
-  echo "Checking for custom actions in /data/action.d..."
-  actions=$(ls -l /data/action.d | egrep '^-' | awk '{print $9}')
-  for action in ${actions}; do
-    if [ -f "/etc/fail2ban/action.d/${action}" ]; then
-      echo "  WARNING: '${action}' already exists and will be overridden"
-      rm -f "/etc/fail2ban/action.d/${action}"
+  for file in ${files}; do
+    if [ -f "/etc/fail2ban/${type}.d/${file}" ]; then
+      echo "  WARNING: '${file}' already exists and will be overridden"
+      rm -f "/etc/fail2ban/${type}.d/${file}"
     fi
-    echo "  Add custom action '${action}'"
-    ln -sf "/data/action.d/${action}" "/etc/fail2ban/action.d/"
-  done
-}
-
-
-# Check if there are any custom filters and symlink them to correct location.
-copy_custom_filters() {
-  echo "Checking for custom filters in /data/filter.d..."
-  filters=$(ls -l /data/filter.d | egrep '^-' | awk '{print $9}')
-  for filter in ${filters}; do
-    if [ -f "/etc/fail2ban/filter.d/${filter}" ]; then
-      echo "  WARNING: '${filter}' already exists and will be overridden"
-      rm -f "/etc/fail2ban/filter.d/${filter}"
-    fi
-    echo "  Add custom filter '${filter}'"
-    ln -sf "/data/filter.d/${filter}" "/etc/fail2ban/filter.d/"
+    echo "  Adding ${type} '${file}'"
+    ln -sf "/data/${type}.d/${file}" "/etc/fail2ban/${type}.d/"
   done
 }
 
@@ -167,7 +155,7 @@ config_watcher() {
 # able to re-enable them when their log files shows up.
 auto_enable_jails() {
   echo "Auto enabling all jails..."
-  conf_files=$(ls -l /etc/fail2ban/jail.d/ | egrep '^-.*\.conf.*' | awk '{print $9}')
+  conf_files=$(ls -l /etc/fail2ban/jail.d/ | egrep '^(-|l).*\.conf.*' | awk '{print $9}')
   for conf_file in "/etc/fail2ban/jail.d/${conf_files}"; do
     if logfile_exist $conf_file; then
       if [ ${conf_file##*.} = nolog ]; then

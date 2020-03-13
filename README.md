@@ -430,13 +430,20 @@ returned 1
 
 # Changelog
 
+### 0.10.4.2-Beta2 (2020-03-13)
+
+* Make so that `jails`, `actions` and `filers` are symlinked in from `/data/...`
+* Fix the `auto_enable_jail` functionality for multiple files and make so it
+  handles symlinks.
+* Make better comments in the code.
+
 ### 0.10.4.2-Beta1 (2019-05-19)
 
-* Refactor all the code
-* Create the `auto_enable_jail` functionality
-* Include coloured output
-* More input parameters
-* A ton more documentation
+* Refactor all the code.
+* Create the `auto_enable_jail` functionality.
+* Include coloured output.
+* More input parameters.
+* A ton more documentation.
 
 ### 0.10.4.1-Beta2 (2018-11-02)
 

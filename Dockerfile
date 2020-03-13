@@ -22,11 +22,16 @@ RUN \
         iptables \
         python3 \
         python3-dev \
-        py3-setuptools \
         ssmtp \
         tzdata \
         whois \
         ncurses \
+    && \
+# Install pip and setuptools.
+    curl -L 'https://bootstrap.pypa.io/get-pip.py' | python3 \
+    && \
+# Install extra packages required by some features in fail2ban.
+    pip3 install dnspython3 pyinotify \
 # Download fail2ban.
     && cd /tmp \
     && curl -OL https://github.com/fail2ban/fail2ban/archive/${FAIL2BAN_VERSION}.zip \

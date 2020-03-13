@@ -35,18 +35,26 @@ RUN \
     python3 get-pip.py --no-wheel \
     && \
 # Install extra packages required by some features in fail2ban.
-    pip3 install dnspython3 pyinotify \
+    pip3 install \
+        dnspython3 \
+        pyinotify \
+    && \
 # Download fail2ban.
-    && cd /tmp \
-    && curl -OL https://github.com/fail2ban/fail2ban/archive/${FAIL2BAN_VERSION}.zip \
-    && unzip ${FAIL2BAN_VERSION}.zip \
-    && cd fail2ban-${FAIL2BAN_VERSION} \
+    curl -OL https://github.com/fail2ban/fail2ban/archive/${FAIL2BAN_VERSION}.zip \
+    && \
+    unzip ${FAIL2BAN_VERSION}.zip \
+    && \
+    cd fail2ban-${FAIL2BAN_VERSION} \
+    && \
 # Covert the fail2ban code to Python 3 and install it.
-    && sh ./fail2ban-2to3 \
-    && python3 setup.py install \
+    sh ./fail2ban-2to3 \
+    && \
+    python3 setup.py install \
+    && \
 # Clean up temporary and unused files.
-    && rm -f /etc/ssmtp/ssmtp.conf \
-    && rm -rf /var/cache/apk/* /tmp/*
+    rm -f /etc/ssmtp/ssmtp.conf \
+    && \
+    rm -rf /var/cache/apk/* /tmp/*
 
 # Add our custom scripts and make them executable.
 ADD *.sh /

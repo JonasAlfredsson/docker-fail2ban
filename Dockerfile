@@ -28,7 +28,11 @@ RUN \
         whois \
     && \
 # Install pip and setuptools.
-    curl -L 'https://bootstrap.pypa.io/get-pip.py' | python3 \
+    cd /tmp \
+    && \
+    curl -L 'https://bootstrap.pypa.io/get-pip.py' -o get-pip.py \
+    && \
+    python3 get-pip.py --no-wheel \
     && \
 # Install extra packages required by some features in fail2ban.
     pip3 install dnspython3 pyinotify \

@@ -22,17 +22,19 @@ RUN \
         iptables \
         python3 \
         python3-dev \
-        py-setuptools \
+        py3-setuptools \
         ssmtp \
         tzdata \
         whois \
         ncurses \
-# Download and install fail2ban.
+# Download fail2ban.
     && cd /tmp \
     && curl -OL https://github.com/fail2ban/fail2ban/archive/${FAIL2BAN_VERSION}.zip \
     && unzip ${FAIL2BAN_VERSION}.zip \
     && cd fail2ban-${FAIL2BAN_VERSION} \
-    && python setup.py install \
+# Covert the fail2ban code to Python 3 and install it.
+    && sh ./fail2ban-2to3 \
+    && python3 setup.py install \
 # Clean up temporary and unused files.
     && rm -f /etc/ssmtp/ssmtp.conf \
     && rm -rf /var/cache/apk/* /tmp/*

@@ -430,6 +430,12 @@ returned 1
 
 # Changelog
 
+### 0.10.4.3-Beta1 (2020-03-13)
+
+* Move over fully to Python 3
+* Include `pyinotify` backend
+* Fix HEALTCHECK command
+
 ### 0.10.4.2-Beta2 (2020-03-13)
 
 * Make so that `jails`, `actions` and `filers` are symlinked in from `/data/...`

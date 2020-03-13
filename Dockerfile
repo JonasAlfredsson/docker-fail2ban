@@ -51,7 +51,11 @@ RUN \
     && \
     python3 setup.py install \
     && \
-# Clean up temporary and unused files.
+# Clean up programs and files which will not be used anymore.
+    python3 -m pip uninstall -y pip setuptools \
+    && \
+    apk del python3-dev \
+    && \
     rm -f /etc/ssmtp/ssmtp.conf \
     && \
     rm -rf /var/cache/apk/* /tmp/*

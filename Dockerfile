@@ -20,12 +20,12 @@ RUN \
     apk --update --no-cache add \
         curl \
         iptables \
+        ncurses \
         python3 \
         python3-dev \
         ssmtp \
         tzdata \
         whois \
-        ncurses \
     && \
 # Install pip and setuptools.
     curl -L 'https://bootstrap.pypa.io/get-pip.py' | python3 \

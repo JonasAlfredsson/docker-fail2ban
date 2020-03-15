@@ -4,7 +4,7 @@
 . $(cd $(dirname $0); pwd)/util.sh
 
 # Collect custom environment variables or set defaults
-TZ=${TZ:-"UTC"}
+TZ=${TZ:-"Etc/UTC"}
 
 F2B_LOG_LEVEL=${F2B_LOG_LEVEL:-"INFO"}
 F2B_BAN_TIME=${F2B_BAN_TIME:-"600"}

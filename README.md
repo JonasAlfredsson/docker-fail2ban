@@ -38,7 +38,7 @@ interested, [check out his][2] other Docker images.
 
 
 ## Available Environment Variables
-- `TZ`: The [timezone][13] assigned to the container (default: `UTC`)
+- `TZ`: The [timezone][13] assigned to the container (default: `Etc/UTC`)
 - `F2B_LOG_LEVEL`: Log level output (default: `INFO`)
 - `F2B_BAN_TIME`: How long a ban should last (default: `600` [i.e. 10 minutes])
 - `F2B_FIND_TIME`: Window of time to determine repeat offenders

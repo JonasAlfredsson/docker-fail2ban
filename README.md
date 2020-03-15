@@ -430,52 +430,67 @@ returned 1
 
 # Changelog
 
+### 0.10.4.3-Beta2 (2020-03-15)
+
+* Add check to make sure all referenced `filter`s are present at startup.
+* Rewrite the `config_watcher` function, to utilize the shared mutex better.
+* Add the `--optimize=2` flag when installing Fail2ban.
+* Make clarifications to previous entries in the changelog.
+
 ### 0.10.4.3-Beta1 (2020-03-13)
 
-* Move over fully to Python 3
-* Include `pyinotify` backend
-* Fix HEALTCHECK command
+* Move over fully to Python 3.
+* Include `pyinotify` backend to allow being notified about logfile changes
+  instead of polling.
+* Include `dnspython3` pip package to allow fail2ban to print more info about
+  the banned IPs.
+* Fix HEALTCHECK command.
 
 ### 0.10.4.2-Beta2 (2020-03-13)
 
-* Make so that `jails`, `actions` and `filers` are symlinked in from `/data/...`
+* Make so that `jails`, `actions` and `filers` are instead symlinked in from
+  `/data/...`
 * Fix the `auto_enable_jail` functionality for multiple files and make so it
   handles symlinks.
+* Reduce the number of build steps in the Dockerfile.
+* Add information about incompatibility with `nftables`.
 * Make better comments in the code.
 
 ### 0.10.4.2-Beta1 (2019-05-19)
 
-* Refactor all the code.
+* Refactor basically all the code.
 * Create the `auto_enable_jail` functionality.
-* Include coloured output.
+* Include colored output.
 * More input parameters.
 * A ton more documentation.
 
 ### 0.10.4.1-Beta2 (2018-11-02)
 
-* Remove wget
-* Update the documentation
-* This container is now available at Docker Hub under `jonasal/fail2ban`
-* Include Makefile
+* Remove `wget`.
+* Update the documentation.
+* This container is now available on Docker Hub under `jonasal/fail2ban`.
+* Include a Makefile with some nice commands.
 
 ### 0.10.4.1-Beta1 (2018-11-02)
 
 * `@JonasAlfredsson` forks the repository.
 * Make fail2ban attach to the `DOCKER-USER` chain in the iptables.
 * Make the mailing functionality send to the right location.
-* Refactor the entrypoint script.
+* Refactor the entrypoint.sh script.
 * Refactor the Dockerfile.
 * Remove unused files and refactor folder structure.
 * Much more documentation.
 
 ### 0.10.4-RC3 (2018-10-06)
 
-* Add whois (Issue #6)
+* Add whois (Issue #6).
 
 ### 0.10.4-RC2 (2018-10-05)
 
-* Allow to add custom actions and filters through `/data/action.d` and `/data/filter.d` folders (Issue #4)
-* Relocate database to `/data/db` and jails to `/data/jail.d` (breaking change, see README.md)
+* Allow to add custom actions and filters through `/data/action.d` and
+  `/data/filter.d` folders (Issue #4).
+* Relocate database to `/data/db` and jails to `/data/jail.d` (breaking change,
+  see README.md).
 
 ### 0.10.4-RC1 (2018-10-04)
 
@@ -483,17 +498,17 @@ returned 1
 
 ### 0.10.3.1-RC4 (2018-08-19)
 
-* Add curl (Issue #1)
+* Add curl (Issue #1).
 
 ### 0.10.3.1-RC3 (2018-07-28)
 
-* Upgrade based image to Alpine Linux 3.8
-* Unset sensitive vars
+* Upgrade based image to Alpine Linux 3.8.
+* Unset sensitive vars.
 
 ### 0.10.3.1-RC2 (2018-05-07)
 
-* Add mail alerts configurations with SSMTP
-* Add healthcheck
+* Add mail alerts configurations with SSMTP.
+* Add HEALTHCHECK command.
 
 ### 0.10.3.1-RC1 (2018-04-25)
 

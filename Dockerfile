@@ -35,7 +35,7 @@ RUN \
     python3 get-pip.py --no-wheel \
     && \
 # Install extra packages required by some features in fail2ban.
-    pip3 install \
+    pip3 install --compile \
         dnspython3 \
         pyinotify \
     && \
@@ -49,7 +49,7 @@ RUN \
 # Covert the fail2ban code to Python 3 and install it.
     sh ./fail2ban-2to3 \
     && \
-    python3 setup.py install \
+    python3 setup.py install --optimize=2 \
     && \
 # Clean up programs and files which will not be used anymore.
     python3 -m pip uninstall -y pip setuptools \

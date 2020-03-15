@@ -97,6 +97,12 @@ parse_logfile() {
 }
 
 
+# Return the name of the filter specified in a jail config file.
+parse_filter_name() {
+  grep "filter" "$1" | cut -d '=' -f 2
+}
+
+
 # Given a config file path, return 0 if the referenced log file exist (or there
 # are no file needed to be found). Return 1 otherwise (i.e. error exit code).
 logfile_exist() {
@@ -104,6 +110,24 @@ logfile_exist() {
   if [ ! -f $logfile ]; then
       #error "Could not find $logfile for $1"
       return 1
+  fi
+  return 0
+}
+
+
+# Given a config file path, return 0 if the referenced filter exist, otherwise
+# we will return 1 (i.e. error exit code).
+filter_exist() {
+  filter_name=$(parse_filter_name $1)
+  if [ "${filter_name}x" == "x" ]; then
+    error "There is no filter referenced in $1"
+    return 1
+  fi
+
+  filter_file=$(ls -l /etc/fail2ban/filter.d/ | egrep "^(-|l).*${filter_name}\.(conf|local).*" | awk '{print $9}')
+  if [ ! -f "/etc/fail2ban/filter.d/${filter_file}" ]; then
+    error "The filter referenced in $1 was not found"
+    return 1
   fi
   return 0
 }
@@ -157,16 +181,20 @@ config_watcher() {
 # able to re-enable them when their log files shows up.
 auto_enable_jails() {
   echo "Auto enabling all jails..."
+  critical_errors=0
+
   conf_files=$(ls -l /etc/fail2ban/jail.d/ | egrep '^(-|l).*\.conf.*' | awk '{print "/etc/fail2ban/jail.d/"$9}')
   for conf_file in ${conf_files}; do
-    if logfile_exist $conf_file; then
+    if ! filter_exist $conf_file; then
+      critical_errors=$((critical_errors+1))
+    elif logfile_exist $conf_file; then
       if [ ${conf_file##*.} = nolog ]; then
         echo "Found the log file for ${conf_file}, enabling..."
         mv ${conf_file} ${conf_file%.*}
       fi
     else
       if [ ${conf_file##*.} = conf ]; then
-        error "The log file for ${conf_file} is missing, disabling..."
+        echo "The log file for ${conf_file} is missing, disabling..."
         mv ${conf_file} ${conf_file}.nolog
         conf_file="${conf_file}.nolog"
       fi
@@ -175,4 +203,9 @@ auto_enable_jails() {
       config_watcher $conf_file &
     fi
   done
+
+  if [ "$critical_errors" -ne "0" ]; then
+    error "There are critical errors with the config files; aborting..."
+    exit 1
+  fi
 }

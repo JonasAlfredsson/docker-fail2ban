@@ -108,8 +108,7 @@ parse_filter_name() {
 logfile_exist() {
   logfile=$(parse_logfile $1)
   if [ ! -f $logfile ]; then
-      #error "Could not find $logfile for $1"
-      return 1
+    return 1
   fi
   return 0
 }

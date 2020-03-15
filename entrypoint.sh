@@ -21,6 +21,7 @@ SSMTP_TLS=${SSMTP_TLS:-"YES"}
 
 # Init
 echo "Initializing fail2ban container"
+rm -rf /tmp/fail2ban.lock
 set_timezone
 set_mail
 set_config

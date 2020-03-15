@@ -132,42 +132,40 @@ filter_exist() {
 }
 
 
-# To hinder that many processes spam fail2ban with restart requests, at the
-# same time, we make a simple locking mechanism to create some order in this
-# world. `mkdir` should be an atomic operation.
-reload_fail2ban() {
-  while :; do
-    if mkdir /tmp/restart.lock; then
-      # We have lock, restart the fail2ban server.
-      fail2ban-client reload
-      sleep 2
-      rmdir /tmp/restart.lock
-      break
-    else
-      # Some other process has the restart lock, wait a second.
-      sleep 1
-    fi
-  done
-}
-
-
-# This is a function which can be "attached" to jail config files that are
-# disabled because they reference a log file which does not (yet) exist. The
-# service who will produce this log file might just not have started yet, so
-# here we will monitor for changes of these missing log files every 30 seconds
-# and then re-enable the config files if they show up.
+# This is a function which can be "attached" to a jail config file that is
+# disabled because it reference a log file which does not (yet) exist. The
+# service that is responsible for writing to this log file might just not have
+# started yet, so here we will monitor for changes of this missing log file
+# every 30 seconds and then re-enable the config file if/when the log shows up.
 config_watcher() {
   local conf_file=$1
+  sleep 5 # Do not immediately check again.
   while :; do
     if logfile_exist ${conf_file}; then
-      if [ ${conf_file##*.} = nolog ]; then
-        echo "Found the log file for ${conf_file}, enabling..."
-        mv ${conf_file} ${conf_file%.*}
-      fi
-      echo "Reloading fail2ban"
-      reload_fail2ban
+      # To hinder that multiple processes (i.e. config_watchers) perform changes
+      # at the same time, we make a simple locking mechanism to create some
+      # order in this world.
+      while :; do
+        # NOTE: `mkdir` should be an atomic operation.
+        if mkdir /tmp/fail2ban.lock 2>/dev/null ; then
+          # We have the lock, rename the config restart the fail2ban server.
+          echo "Found the log file for ${conf_file}, enabling..."
+          mv ${conf_file} ${conf_file%.*}
+
+          echo "Reloading fail2ban"
+          fail2ban-client reload
+          sleep 1
+
+          rmdir /tmp/fail2ban.lock
+          break
+        else
+          # Some other process has the lock, wait 2 seconds and try again.
+          sleep 2
+        fi
+      done
       break
     fi
+
     error "Waiting for the log file referenced in ${conf_file%.*} to come online"
     sleep 30
   done
@@ -175,8 +173,8 @@ config_watcher() {
 
 
 # A function that sifts through /data/jail.d/ and disables every jail config
-# file which references a log file that does not (yet) exist. It then starts a
-# "config_watcher" on each one of these configs, which were not ready, to be
+# file which reference a log file that does not (yet) exist. It then starts a
+# `config_watcher` for each one of these configs, which were not ready, to be
 # able to re-enable them when their log files shows up.
 auto_enable_jails() {
   echo "Auto enabling all jails..."

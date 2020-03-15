@@ -45,13 +45,18 @@ EOL
 }
 
 
-# Modify the fail2ban config file and the default jail settings.
+# Modify the fail2ban config file.
 set_config() {
   echo "Setting Fail2ban configuration"
   sed -i "s/logtarget =.*/logtarget = STDOUT/g" /etc/fail2ban/fail2ban.conf
   sed -i "s/loglevel =.*/loglevel = $F2B_LOG_LEVEL/g" /etc/fail2ban/fail2ban.conf
   sed -i "s/dbfile =.*/dbfile = \/fail2ban_db\/fail2ban\.sqlite3/g" /etc/fail2ban/fail2ban.conf
   sed -i "s/dbpurgeage =.*/dbpurgeage = $F2B_DB_PURGE_AGE/g" /etc/fail2ban/fail2ban.conf
+}
+
+
+# Create the jail.local file to define the default settings for jails.
+set_default_jail_config() {
   cat > /etc/fail2ban/jail.local <<EOL
 [DEFAULT]
 bantime = ${F2B_BAN_TIME}

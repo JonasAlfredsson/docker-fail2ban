@@ -313,10 +313,13 @@ shows up.
 ## Notification Mails
 `fail2ban` can send mail through the `sendmail` program. By default it sends a
 mail every time the server starts, a jail starts and a ban is issued. This got
-a bit annoying so anything else than mails regarding bans issued is
-[shut off][9] by setting two variables inside `action.d/sendmail-common.local`
-to empty strings. The default behavior can be reinstated by just removing this
-file.
+a bit annoying so anything else than mails regarding bans issued has been
+[shut off][9] by setting the two variables `actionstart` and `actionstop`,
+inside `/etc/fail2ban/action.d/sendmail-common.local`, to empty strings. This
+is done by a function inside the `util.sh` script, but the original
+functionality can be restored by including a completely empty
+`sendmail-common.local` file as a custom "action" in the `/data/action.d/`
+folder.
 
 If no external mail provider is specified (check out the `fail2ban.env` file
 for an example with Gmail), all mail will be directed to `root@localhost:25`.
@@ -325,8 +328,8 @@ This way you should be able to read any mails by simply typing `mail` (or
 
 The content of these mails are regulated by the string that is assigned to the
 environment variable `F2B_ACTION`. If you are using the "sendmail" program there
-is currently four different options available for you, and they point to
-specific files that should be run when sending mail. The options are:
+are currently four different options available for you, and they point to
+specific files that should be run when sending a mail. The options are:
 
 - `action_`: action.d/[**sendmail**.conf][19]
 - `action_mw`: action.d/[**sendmail-whois**.conf][20]
@@ -334,7 +337,7 @@ specific files that should be run when sending mail. The options are:
 - ` `: _Don't send any mails_
 
 If you enter a blank line no mails will be sent, and the contents of the other
-ones can be observed by following the links.
+ones can be observed by following their links.
 
 
 

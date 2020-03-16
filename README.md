@@ -501,6 +501,16 @@ returned 1
 
 # Changelog
 
+### 0.11.1.1-Beta1 (2020-03-16)
+
+* Upgrade Alpine to v3.11
+* Upgrade fail2ban to [v0.11.1][23]
+  * New schema in the database, downgrades are therefore not supported.
+  * Not all ban actions are IPv6-capable (not really relevant since this
+    container does not yet support IPv6).
+* Complete overhaul of the folder structure in the repository.
+* Update examples.
+
 ### 0.10.4.4-Beta1 (2020-03-16)
 
 * Fix troublesome sender domain ([Bug report][22]).
@@ -620,3 +630,4 @@ returned 1
 [20]: https://github.com/fail2ban/fail2ban/blob/master/config/action.d/sendmail-whois.conf
 [21]: https://github.com/fail2ban/fail2ban/blob/master/config/action.d/sendmail-whois-lines.conf
 [22]: https://github.com/JonasAlfredsson/docker-fail2ban/issues/2
+[23]: https://github.com/fail2ban/fail2ban/blob/0.11.1/ChangeLog

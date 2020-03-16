@@ -17,6 +17,12 @@ set_timezone() {
 }
 
 
+# Edit the line that defines which CHAIN banned IPs should be attached to.
+set_iptables_chain() {
+  echo "Configuring fail2ban to use the '${IPTABLES_CHAIN}' CHAIN"
+  sed -i "s/chain =.*/chain = ${IPTABLES_CHAIN}/g" /etc/fail2ban/action.d/iptables-common.conf
+}
+
 # Configure mail settings.
 set_mail() {
   echo "Setting SSMTP configuration"

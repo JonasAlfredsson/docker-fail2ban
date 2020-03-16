@@ -6,6 +6,8 @@
 # Collect custom environment variables or set defaults
 TZ=${TZ:-"Etc/UTC"}
 
+IPTABLES_CHAIN=${IPTABLES_CHAIN:-"DOCKER-USER"}
+
 F2B_LOG_LEVEL=${F2B_LOG_LEVEL:-"INFO"}
 F2B_BAN_TIME=${F2B_BAN_TIME:-"600"}
 F2B_FIND_TIME=${F2B_FIND_TIME:-"600"}
@@ -23,6 +25,7 @@ SSMTP_TLS=${SSMTP_TLS:-"YES"}
 echo "Initializing fail2ban container"
 rm -rf /tmp/fail2ban.lock
 set_timezone
+set_iptables_chain
 set_mail
 set_config
 set_default_jail_config

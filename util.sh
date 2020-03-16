@@ -52,7 +52,7 @@ EOL
 
 
 # Modify the fail2ban config file.
-set_config() {
+set_fail2ban_config() {
   echo "Setting Fail2ban configuration"
   sed -i "s/logtarget =.*/logtarget = STDOUT/g" /etc/fail2ban/fail2ban.conf
   sed -i "s/loglevel =.*/loglevel = $F2B_LOG_LEVEL/g" /etc/fail2ban/fail2ban.conf

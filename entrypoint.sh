@@ -27,7 +27,7 @@ rm -rf /tmp/fail2ban.lock
 set_timezone
 set_iptables_chain
 set_mail
-set_config
+set_fail2ban_config
 set_default_jail_config
 symlink_files_to_folder "jail"
 symlink_files_to_folder "action"

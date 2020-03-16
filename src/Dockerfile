@@ -2,7 +2,7 @@ FROM alpine:3.11
 
 LABEL maintainer="Jonas Alfredsson <jonas.alfredsson@protonmail.com>"
 
-ARG FAIL2BAN_VERSION=0.10.4
+ARG FAIL2BAN_VERSION=0.11.1
 
 # Do a single run command to make the intermediary containers smaller.
 RUN \

@@ -29,6 +29,7 @@ set_iptables_chain
 set_mail
 set_fail2ban_config
 set_default_jail_config
+set_send_mail_only_when_ban_issued
 symlink_files_to_folder "jail"
 symlink_files_to_folder "action"
 symlink_files_to_folder "filter"

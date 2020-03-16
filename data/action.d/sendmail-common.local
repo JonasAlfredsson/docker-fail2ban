@@ -1,8 +1,0 @@
-# This file is here to stop fail2ban from sending a mail every time a jail is
-# started or stopped. Now it will only send on bans.
-
-[Definition]
-
-actionstart =
-
-actionstop =

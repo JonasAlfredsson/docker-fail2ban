@@ -75,6 +75,18 @@ EOL
 }
 
 
+# Create a `.local` file, which will have precedence over the `.conf` file, to
+# make so that fail2ban only sends a mail when a ban is issued, and not for all
+# the other actions (which gets annoying).
+set_send_mail_only_when_ban_issued() {
+  cat > /etc/fail2ban/action.d/sendmail-common.local <<EOL
+[Definition]
+actionstart =
+actionstop =
+EOL
+}
+
+
 # A function which creates symlinks inside the default fail2ban folders, under
 # /etc/fail2ban/, to all files found in the user defined folders under /data/.
 # This will allow us to manipulate the created symlinks, without destroying

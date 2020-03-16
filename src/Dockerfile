@@ -1,4 +1,4 @@
-FROM alpine:3.8
+FROM alpine:3.11
 
 LABEL maintainer="Jonas Alfredsson <jonas.alfredsson@protonmail.com>"
 

@@ -49,7 +49,7 @@ RUN \
 # Covert the fail2ban code to Python 3 and install it.
     sh ./fail2ban-2to3 \
     && \
-    python3 setup.py install --optimize=2 \
+    python3 setup.py install --without-tests --optimize=2 \
     && \
 # Clean up programs and files which will not be used anymore.
     python3 -m pip uninstall -y pip setuptools \

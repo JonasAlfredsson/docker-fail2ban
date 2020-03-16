@@ -1,9 +1,10 @@
-version: "3.2"
+version: "3"
 
 services:
   fail2ban:
-    build: ./fail2ban
+    build: .
     container_name: fail2ban
+    restart: unless-stopped
     network_mode: "host"
     cap_add:
       - NET_ADMIN
@@ -13,7 +14,6 @@ services:
       - log_collector:/xlogs
     env_file:
       - "./fail2ban.env"
-    restart: unless-stopped
 
 volumes:
   fail2ban_db:

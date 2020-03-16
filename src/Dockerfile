@@ -61,11 +61,8 @@ RUN \
     rm -rf /var/cache/apk/* /tmp/*
 
 # Add our custom scripts and make them executable.
-ADD *.sh /
-RUN chmod a+x /*.sh
-
-# Copy custom configurations.
-COPY ./data /data
+COPY scripts/ /scripts
+RUN chmod -R a+x /scripts
 
 # Make database, containing ban history, persistent.
 VOLUME [ "/fail2ban_db" ]
@@ -73,5 +70,5 @@ VOLUME [ "/fail2ban_db" ]
 # Add heartbeat command.
 HEALTHCHECK --interval=10s --timeout=5s CMD fail2ban-client ping || exit 1
 
-ENTRYPOINT [ "/entrypoint.sh" ]
+ENTRYPOINT [ "/scripts/entrypoint.sh" ]
 CMD [ "fail2ban-server", "-f", "-x", "-v", "start" ]

@@ -52,7 +52,7 @@ RUN \
     python3 setup.py install --without-tests --optimize=2 \
     && \
 # Clean up programs and files which will not be used anymore.
-    python3 -m pip uninstall -y pip setuptools \
+    python3 -m pip uninstall -y setuptools pip \
     && \
     apk del python3-dev \
     && \

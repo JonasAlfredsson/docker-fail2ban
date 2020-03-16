@@ -501,6 +501,14 @@ returned 1
 
 # Changelog
 
+### 0.10.4.4-Beta1 (2020-03-16)
+
+* Fix troublesome sender domain ([Bug report][22]).
+* Add `IPTABLES_CHAIN` environment variable.
+* Move the creation of [`sendmail-common.local`](#notification-mails) in to a
+  function in `util.sh` instead of copying a file.
+* Update documentation.
+
 ### 0.10.4.3-Beta2 (2020-03-15)
 
 * Add check to make sure all referenced `filter`s are present at startup.
@@ -611,3 +619,4 @@ returned 1
 [19]: https://github.com/fail2ban/fail2ban/blob/master/config/action.d/sendmail.conf
 [20]: https://github.com/fail2ban/fail2ban/blob/master/config/action.d/sendmail-whois.conf
 [21]: https://github.com/fail2ban/fail2ban/blob/master/config/action.d/sendmail-whois-lines.conf
+[22]: https://github.com/JonasAlfredsson/docker-fail2ban/issues/2

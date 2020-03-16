@@ -418,7 +418,7 @@ services you are trying to protect are running directly on the host, since those
 packets will be directed to the `INPUT` chain by the `PREROUTING` rules.
 However, when you are running your services inside Docker containers they will
 usually reside inside the **Docker network** (unless you specify them to use
-the **host** network). As mentioned [above](#docker--17.06-and-chains), packets
+the **host** network). As mentioned [above](#docker--1706-and-chains), packets
 destined for the Docker network instead gets routed through the `FORWARD` chain
 by `PREROUTING`, and the fail2ban rules present in `INPUT` will be completely
 bypassed if nothing is done to combat this.

@@ -94,7 +94,7 @@ EOL
 symlink_files_to_folder() {
   type=$1
   echo "Checking for ${type}s in /data/${type}.d..."
-  files=$(ls -l /data/${type}.d/ | egrep '^-' | awk '{print $9}')
+  files=$(ls -l /data/${type}.d/ 2>/dev/null | egrep '^-' | awk '{print $9}')
 
   if [ "${files}x" == "x" ]; then
     echo "  No ${type} files found"

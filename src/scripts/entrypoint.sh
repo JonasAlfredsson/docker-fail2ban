@@ -1,9 +1,10 @@
 #!/bin/sh
 
-# Source "util.sh" which contain all our nice tools
+# Source "util.sh" which contain all our nice tools.
 . $(cd $(dirname $0); pwd)/util.sh
 
-# Collect custom environment variables or set defaults
+
+# Collect custom environment variables or set defaults.
 TZ=${TZ:-"Etc/UTC"}
 
 IPTABLES_CHAIN=${IPTABLES_CHAIN:-"DOCKER-USER"}
@@ -21,7 +22,8 @@ SSMTP_PORT=${SSMTP_PORT:-"25"}
 SSMTP_HOSTNAME=${SSMTP_HOSTNAME:-"fail2ban"}
 SSMTP_TLS=${SSMTP_TLS:-"YES"}
 
-# Init
+
+# Do all the initialization tasks.
 echo "Initializing fail2ban container"
 rm -rf /tmp/fail2ban.lock
 set_timezone
@@ -35,7 +37,7 @@ symlink_files_to_folder "action"
 symlink_files_to_folder "filter"
 auto_enable_jails
 
-# Launch fail2ban
+
+# Launch fail2ban.
 echo "Launching fail2ban"
 exec "$@"
-

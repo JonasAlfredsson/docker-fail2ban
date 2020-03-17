@@ -23,6 +23,7 @@ set_iptables_chain() {
   sed -i "s/chain =.*/chain = ${IPTABLES_CHAIN}/g" /etc/fail2ban/action.d/iptables-common.conf
 }
 
+
 # Configure mail settings.
 set_mail() {
   echo "Setting SSMTP configuration"

@@ -13,7 +13,7 @@ services:
       - fail2ban_db:/fail2ban_db
       - log_collector:/xlogs
     env_file:
-      - "./fail2ban.env"
+      - ./fail2ban.env
 
 volumes:
   fail2ban_db:

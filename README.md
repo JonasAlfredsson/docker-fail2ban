@@ -51,9 +51,10 @@ interested, [check out his][2] other Docker images.
 - `F2B_DEST_EMAIL`: Destination address to send
                     [notification e-mails](#notification-mails) to
                     (default: `root@localhost`)
-- `F2B_SENDER`: Sender email address used by some actions
-                (default: `root@fail2ban`)
-- `F2B_ACTION`: Default action on ban (default: `%(action_mw)s`)
+- `F2B_SENDER`: Sender e-mail address used by some actions
+                (default: `fail2ban@$(hostname)`)
+- `F2B_ACTION`: Default [e-mail action](#notification-mails) on ban (default:
+                `%(action_mw)s`)
 - `SSMTP_HOST`: SMTP server host
 - `SSMTP_PORT`: SMTP server port (default: `25`)
 - `SSMTP_HOSTNAME`: Full hostname (default: `fail2ban`)
@@ -74,8 +75,9 @@ following two commands will facilitate that:
 ```bash
 docker build --tag fail2banService .
 docker run -d --network host --cap-add NET_ADMIN --cap-add NET_RAW \
-           -v $(pwd)/persistent/logs:/xlogs
+           -v $(pwd)/shared/logs:/xlogs
            -v $(pwd)/persistent/db:/fail2ban_db
+           -v $(pwd)/data:/data
            --name fail2ban fail2banService
 ```
 

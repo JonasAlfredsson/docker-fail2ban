@@ -73,20 +73,20 @@ host mounted folders to make data persistent and shared between services. The
 following two commands will facilitate that:
 
 ```bash
-docker build --tag fail2banService .
+docker build --tag jonasal/fail2ban:local .
 docker run -d --network host --cap-add NET_ADMIN --cap-add NET_RAW \
-           -v $(pwd)/shared/logs:/xlogs
-           -v $(pwd)/persistent/db:/fail2ban_db
-           -v $(pwd)/data:/data
-           --name fail2ban fail2banService
+           -v $(pwd)/shared/logs:/xlogs \
+           -v $(pwd)/persistent/db:/fail2ban_db \
+           -v $(pwd)/data:/data \
+           --name fail2ban jonasal/fail2ban:local
 ```
 
 
 ## Run with `docker-compose`
 Docker-Compose is my preferred way to run this image. See the example of a
-compose file inside the `examples/` folder, and you may use the `.env` file to
-define all the variables in a separate location. Then it can all be launched
-via the following commands:
+compose file inside the `examples/` folder, and you may use the `fail2ban.env`
+file to define all the variables in a separate location. Then it can all be
+launched via the following commands:
 
 ```bash
 docker-compose build --pull
@@ -97,16 +97,16 @@ docker-compose up
 
 # Jails, Filters, Actions and Logs
 
-`fail2ban` issues bans by scanning through [log files](#logs) to find a regex
+Fail2ban issues bans by scanning through [log files](#logs) to find a regex
 pattern (see [filters](#filters)) which indicates that some IP has performed,
 for example, a failed login attempt. If these failed attempts continue it may
-be because of a brute-force attack, and `fail2ban` will then perform the
-defined "[`banaction`](#actions)" to stop this. The default action is that
-`fail2ban` will store the offending IP in its database before adding a rule to
+be because of a brute-force attack, and fail2ban will then perform the
+defined "[`ban action`](#actions)" to stop this. The default action is that
+fail2ban will store the offending IP in its database before adding a rule to
 the `iptables` which block any further communication with that peer.
 
 So for this service to be useful you will first need another service that
-produce a log file that `fail2ban` can monitor for suspicious behavior. In the
+produce a log file that fail2ban can monitor for suspicious behavior. In the
 rest of this section I will use a basic example with [Nextcloud][12] as the
 service to protect, and it will output any login attempts to the file
 `nextcloud.log`. How this log is made readable from another container is
@@ -121,8 +121,8 @@ mounted/copied into the container under the following folder locations:
 - `/data/action.d/`
 - `/data/filter.d/`
 
-Files found in these folders will then be symlinked over to the corresponding
-fail2ban folders under `/etc/fail2ban/<...>` at startup of this container. If
+Files found in these folders will be symlinked over to the corresponding
+fail2ban folders, under `/etc/fail2ban/<...>`, at startup of this container. If
 you add a custom file that has the exact same name as a file which exist at
 one of those locations, the destination file will be overwritten by the custom
 one while a message is printed in the log notifying you about it.
@@ -130,7 +130,7 @@ one while a message is printed in the log notifying you about it.
 ### Jails
 Jail files allows you to tailor the ban settings for each individual service
 being monitored. Create a new `jail` file called `nextcloud.conf` in
-`/data/jail.d/`:
+[`/data/jail.d/`](#custom-jails-actions-and-filters):
 
 ```
 [nextcloud]
@@ -150,10 +150,10 @@ anything else will use the [default values][17].
 In the config file above we defined that this jail should use a custom filter,
 called `ncFilter`, when monitoring the Nextcloud log file. This "filter" is
 another file which will contain the regex(s) used to identify what lines in the
-log file that should be identified as failed login attempts. `fail2ban` expects
+log file that should be identified as failed login attempts. Fail2ban expects
 to find this filter inside `/etc/fail2ban/filter.d/`, so if this is not a
 "default" filter the file `ncFilter.conf` needs to be created and copied into
-the [`/data/filter.d/`](#jails-filters-actions-and-logs) folder.
+the [`/data/filter.d/`](#custom-jails-actions-and-filters) folder.
 
 A usable filter for the Nextcloud service might look something like this:
 
@@ -176,7 +176,7 @@ about some interesting limitations imposed on log file's format, and the
 [official manual][14] for more info about the regex options.
 
 ### Actions
-The default action taken, when `fail2ban` identifies an IP that need to be
+The default action taken, when fail2ban identifies an IP that need to be
 banned, is defined in the file `/etc/fail2ban/jail.conf` on the following line:
 
 ```
@@ -194,7 +194,7 @@ unless you are running some alternative firewall program (like `firewalld`,
 
 > NOTE: The environment variable `F2B_ACTION` allows you define what "action"
         the [mail program](#notification-mails) will make when you need to be
-        notified about something. This is not directly related to "banaction",
+        notified about something. This is not directly related to "`banaction`",
         so the naming is a bit unfortunate.
 
 
@@ -202,25 +202,26 @@ unless you are running some alternative firewall program (like `firewalld`,
 ## Logs
 Up till now we have assumed that the `fail2ban` container had easy access to the
 log files of interest. However, in an environment with many other containers,
-that are running a single service each, we must design a method that can be used
-by all of these to share their logs.
+which are running a single service each, we must design a method that can be
+used by all of these to share their logs so they are readable by our `fail2ban`
+container.
 
 The most simple and straight forward method is to use a host mounted folder,
 where you later configure all external services to place their log files.
 However, it is also possible to use a `named volume`, which might be preferred
-when using `docker-compose`.
+if you are using `docker-compose`.
 
 Inside the container running Nextcloud you need to mount the named volume
 `log_collector`, or whatever name you give it, and make sure the Nextcloud
 service place its logs inside this. This volume is then mounted at `/xlogs` in
-the fail2ban container, which is where it expects to find the log file as
-we have defined `logpath = /xlogs/nextcloud.log` inside the jail config file.
-This way multiple services' logs can be observed from a single fail2ban
-container. The only issue is that this requires the folder/volume to be
-writable by all of the monitored services, which often means that you have to
-set the `777` permission on this folder.
+the fail2ban container, which is where it expects to find the log file since
+`logpath = /xlogs/nextcloud.log` is defined inside the jail config file. This
+way multiple services' logs can be observed from a single `fail2ban` container.
+The only issue is that this requires the folder/volume to be writable by all of
+the monitored services, which often means that you have to set the `777`
+permission on this folder.
 
-A `docker-compose` file for this may look something like this.
+A `docker-compose` file for this may look something like this:
 ```yaml
 .
 .
@@ -273,15 +274,15 @@ docker exec <CONTAINER> fail2ban-client set <JAIL> unbanip <IP>
 ## Log File Layout
 The [documentation][14] states that the log files that are parsed needs to have
 a timestamp in the beginning of the line. This is a built in functionality of
-`fail2ban`, and **cannot** be changed. If a regex is created with a `^`, i.e.
+fail2ban, and **cannot** be changed. If a regex is created with a `^`, i.e.
 "at the beginning of the line", then the anchor actually refers to the start of
 the **remainder** of the line, _after_ the preceding timestamp and intervening
 whitespace.
 
-If `fail2ban` is unable to interpret the timestamp in the beginning it will tell
+If fail2ban is unable to interpret the timestamp in the beginning it will tell
 you so in its output, and then you have two options:
 - Reconfigure your daemon to log with a timestamp in a more common format.
-- File a [bug report][18] to `fail2ban` asking to have your timestamp format
+- File a [bug report][18] to fail2ban asking to have your timestamp format
   included.
 
 However, since this functionality is still undocumented for the users, trial and
@@ -304,24 +305,24 @@ failregex = ^<HOST> -.*
 
 ## Missing Log Files
 If a log file is defined in a `jail`, but the service that produce this file
-has not started yet, `fail2ban` will crash since it lacks error handling in
+has not started yet, fail2ban will crash since it lacks error handling in
 the case where files are missing. I have therefore created the functionality
 where the startup script will monitor the file paths of the logs defined in
 every `jail` config, and disable them until the target file shows up. This then
-enables the `jails` again and reloads `fail2ban` when the missing log files
+enables the `jails` again and reloads fail2ban when the missing log files
 shows up.
 
 
 ## Notification Mails
-`fail2ban` can send mail through the `sendmail` program. By default it sends a
+Fail2ban can send mail through the `sendmail` program. By default it sends a
 mail every time the server starts, a jail starts and a ban is issued. This got
 a bit annoying so anything else than mails regarding bans issued has been
 [shut off][9] by setting the two variables `actionstart` and `actionstop`,
 inside `/etc/fail2ban/action.d/sendmail-common.local`, to empty strings. This
 is done by a function inside the `util.sh` script, but the original
 functionality can be restored by including a completely empty
-`sendmail-common.local` file as a custom "action" in the `/data/action.d/`
-folder.
+`sendmail-common.local` file as a custom "action" in the
+[`/data/action.d/`](#custom-jails-actions-and-filters) folder.
 
 If no external mail provider is specified (check out the `fail2ban.env` file
 for an example with Gmail), all mail will be directed to `root@localhost:25`.
@@ -339,7 +340,7 @@ specific files that should be run when sending a mail. The options are:
 - ` `: _Don't send any mails_
 
 If you enter a blank line no mails will be sent, and the contents of the other
-ones can be observed by following their links.
+ones can be observed by following the links to their source files.
 
 
 
@@ -386,7 +387,7 @@ of what should happen to the packets.
 This is actually what the Docker service does, by attaching a `DOCKER`
 chain onto the `FORWARD` chain. If you have the Docker service running you
 should be able to see these chains if you run the following command on your
-host.
+host:
 
 ```bash
 sudo iptables -nL
@@ -406,14 +407,15 @@ formulated without affecting the rest of the host system's internet connection.
 However, as this chain is modified automatically by the Docker service, you
 would not have much luck setting custom rules you wanted to be persistent there.
 Luckily, in a [pull request][5] leading up to the 17.06 release of Docker, there
-were new features added to the iptables that are created by the Docker service.
-It introduced a new chain called `DOCKER-USER` which will be placed before the
-normal `DOCKER` chain. This is empty by default and will not be touched by
-Docker at all, as it is [intended][7] to be used for custom user defined rules.
+were new features added to the `iptables` that are created by the Docker
+service. It introduced a new chain called `DOCKER-USER` which will be placed
+before the normal `DOCKER` chain. This is empty by default and will not be
+touched by Docker at all, since it is [intended][7] to be used for custom user
+defined rules.
 
 
 ## fail2ban and Chains
-`fail2ban` creates one unique chain for every `jail`/service defined, in order
+Fail2ban creates one unique chain for every `jail`/service defined, in order
 to easily divide different rules for different services. This way you may have a
 specific IP banned for one web service while it is allowed to access another.
 
@@ -448,7 +450,7 @@ block traffic for both `INPUT` and `FORWARD`, continue reading the next section
 
 ## Custom Chains
 When I designed this container I only use chains I know will exist on all
-computers, so other people can use this without too much tinkering. However, as
+computers, so other people can use this without too much tinkering. But, as
 stated in the section [above](#fail2ban-and-chains), the problem remain where
 fail2ban only affects either the **host's network**, by applying rules to
 `INPUT`, or only the **Docker network** by applying them to `DOCKER-USER`.
